@@ -77,4 +77,9 @@ export class EventoController {
   update(@Param('id') id: string, @Body() dto: EventoDto) {
     return this.eventoService.update({ id, ...dto });
   }
+
+  @Put(':id/status')
+  async updateStatus(@Param('id') id: string, @Body('status') status: string) {
+    return this.eventoService.updateStatus(id, status);
+  }
 }

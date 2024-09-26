@@ -13,6 +13,8 @@ import { AuthGuard } from './auth/auth.guard';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { NotificacaoModule } from './notificacao/notificacao.module';
+import { MailerModule } from '@nestjs-modules/mailer';
+import { MailModule } from './email/mail.module';
 
 @Module({
   imports: [
@@ -25,7 +27,9 @@ import { NotificacaoModule } from './notificacao/notificacao.module';
     NotificacaoModule,
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'uploads')
-    })
+    }),
+    MailerModule,
+    MailModule
   ],
   controllers: [AppController],
   providers: [{

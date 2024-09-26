@@ -1,41 +1,46 @@
 import {
-    IsNotEmpty,
-    IsOptional,
-    IsString,
-    IsUUID,
-    IsDate,
-  } from 'class-validator';
-  
-  export class UsuarioDto {
-    @IsUUID()
-    @IsOptional()
-    id: string;
-  
-    @IsString()
-    @IsNotEmpty()
-    nome: string;
- 
-    @IsString()
-    @IsNotEmpty()
-    email: string;
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  IsUUID,
+  IsDate,
+} from 'class-validator';
 
-    @IsDate()
-    @IsNotEmpty()
-    dataNascimento: Date;
+export class UsuarioDto {
+  @IsUUID()
+  @IsOptional()
+  id: string;
 
-    @IsString()
-    @IsNotEmpty()
-    senha: string;
+  @IsString()
+  @IsNotEmpty()
+  nome: string;
 
-    @IsString()
-    @IsOptional()
-    imagem: string;
+  @IsString()
+  @IsNotEmpty()
+  email: string;
 
-    @IsString()
-    @IsNotEmpty()
-    acesso: string;
-    
-    @IsOptional()
-    refreshtoken: string | null;
-  }
-  
+  @IsDate()
+  @IsNotEmpty()
+  dataNascimento: Date;
+
+  @IsString()
+  @IsNotEmpty()
+  senha: string;
+
+  @IsString()
+  @IsOptional()
+  imagem: string;
+
+  @IsString()
+  @IsOptional()
+  refresh_token: string | null;
+
+  // Propriedades para recuperação de senha
+  @IsString()
+  @IsOptional()
+  passwordResetCode: string | null;
+
+  @IsDate()
+  @IsOptional()
+  passwordResetExpiration: Date | null;
+}

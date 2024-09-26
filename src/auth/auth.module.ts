@@ -5,6 +5,7 @@ import { AuthController } from './auth.controller';
 import { jwtConstants } from './constants';
 import { UsuarioModule } from 'src/usuario/usuario.module';
 import { HashService } from 'src/usuario/hash.service';
+import { MailModule } from 'src/email/mail.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { HashService } from 'src/usuario/hash.service';
       secret: jwtConstants.secret,
       signOptions: { expiresIn: '60m' }, // expiração do access token
     }),
+    MailModule, // Importando o MailModule
   ],
   providers: [
     AuthService,

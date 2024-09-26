@@ -30,4 +30,31 @@ export class AuthController {
   getProfile(@Request() req) {
     return req.user;
   }
+
+  @Public()
+  @Post('esqueceu-senha')
+  async forgotPassword(@Body('email') email: string) {
+    await this.authService.generatePasswordResetCode(email);
+    return { message: 'Se o e-mail estiver cadastrado, você receberá um e-mail com instruções para redefinir sua senha.' };
+  }
+
+  @Public()
+  @Post('validar-reset-code')
+  async validateResetCode(@Body() body: { code: string }) {
+    const { code } = body;
+    return this.authService.validatePasswordResetCode(code);
+  }
+
+  @Public()
+  @Post('atualizar-senha')
+  async resetPassword(@Body() body: { code: string, newPassword: string }) {
+    // Valida o código de redefinição de senha, passando o email e o código
+    await this.authService.validatePasswordResetCode(body.code);
+    
+    // Reseta a senha
+    await this.authService.resetPassword(body.code, body.newPassword);
+    
+    return { message: 'Senha alterada com sucesso' };
+  }
+  
 }

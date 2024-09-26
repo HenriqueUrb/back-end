@@ -33,4 +33,12 @@ export class UsuarioEntity {
 
   @Column({ type: 'text', nullable: true })
   refreshtoken: string | null;
+
+  // Adicionando as colunas para o código de redefinição de senha e data de expiração
+  @Column({ type: 'text', nullable: true })
+  passwordResetCode: string | null;
+
+  @Column({ type: 'timestamptz', nullable: true })
+  passwordResetExpiration: Date | null;
 }
+

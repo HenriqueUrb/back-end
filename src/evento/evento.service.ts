@@ -5,6 +5,9 @@ import { UsuarioEntity } from 'src/usuario/usuario.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EventoDto } from './evento.dto';
 import { EventoUsuarioEntity } from 'src/evento_usuario/evento_usuario.entity';
+import * as fs from 'fs';
+import * as path from 'path';
+import { MailService } from 'src/email/mail.service';
 
 @Injectable()
 export class EventoService {
@@ -14,7 +17,8 @@ export class EventoService {
     @InjectRepository(UsuarioEntity)
     private usuarioRepository: Repository<UsuarioEntity>,
     @InjectRepository(EventoUsuarioEntity)
-    private eventoUsuarioRepository: Repository<EventoUsuarioEntity>
+    private eventoUsuarioRepository: Repository<EventoUsuarioEntity>,
+    private mailService: MailService
   ) { }
 
   findAll() {
@@ -136,27 +140,36 @@ export class EventoService {
     return updatedEvento;
   }
 
-  async updateEventoUsuarios(dto: EventoDto) {
-    await this.validaEvento(dto);
+    async updateEventoUsuarios(dto: EventoDto) {
+      await this.validaEvento(dto);
 
-    const existingEvento = await this.findById(dto.id);
+      const existingEvento = await this.findById(dto.id);
+      const admin = await this.usuarioRepository.findOne({ where: { id: dto.admin } });
 
-    if (dto.usuarios && dto.usuarios.length > 0) {
-      await this.eventoUsuarioRepository.delete({ evento: existingEvento });
 
-      const eventoUsuarios = dto.usuarios.map(dtoUsuario => {
-        const eventoUsuario = new EventoUsuarioEntity();
-        eventoUsuario.evento = { id: dto.id } as EventoEntity;
-        eventoUsuario.usuario = dtoUsuario.usuario;
-        eventoUsuario.statusParticipante = dtoUsuario.statusParticipante;
-        return eventoUsuario;
+      if (dto.usuarios && dto.usuarios.length > 0) {
+        await this.eventoUsuarioRepository.delete({ evento: existingEvento });
+        const eventoUsuarios = dto.usuarios.map(dtoUsuario => {
+          const eventoUsuario = new EventoUsuarioEntity();
+          eventoUsuario.evento = { id: dto.id } as EventoEntity;
+          eventoUsuario.usuario = dtoUsuario.usuario;
+          eventoUsuario.statusParticipante = dtoUsuario.statusParticipante;
+          
+    
+          return eventoUsuario;
       });
 
-      await this.eventoUsuarioRepository.save(eventoUsuarios);
-    }
+        await this.eventoUsuarioRepository.save(eventoUsuarios);
+      }
 
-    return existingEvento;
-  }
+      
+
+      this.mailService.sendSolicitacaoParticipacao(admin.email, admin.nome, "Solicitante", dto.titulo);
+
+      
+
+      return existingEvento;
+    }
 
   private async validaEvento(evento: EventoDto) {
     this.validaPrenchimentoCampos(evento);
@@ -219,4 +232,30 @@ export class EventoService {
       );
     }
   }
+
+  async updateStatus(id: string, status: string) {
+    const evento = await this.findById(id);
+  
+    const oldStatus = evento.status_aprov;
+    evento.status_aprov = status.toUpperCase();
+    await this.eventoRepository.save(evento);
+  
+    const admin = await this.usuarioRepository.findOne({ where: { id: evento.admin } });
+  
+    // Envia e-mail apenas se o status mudou de "pendente" para "aprovado"
+    if (oldStatus !== 'A' && evento.status_aprov === 'A' && admin) {
+      await this.mailService.sendAvisoEventoAprovado(admin.email, admin.nome, evento.titulo);
+    }
+    
+    // Envia e-mail se o status mudou para "reprovado" (por exemplo, status 'R')
+    else if (oldStatus !== 'R' && evento.status_aprov === 'R' && admin) {
+      await this.mailService.sendAvisoEventoReprovado(admin.email, admin.nome, evento.titulo);
+    }
+  
+    return evento;
+  }
+  
+  
+  
+
 }
