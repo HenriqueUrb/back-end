@@ -4,7 +4,7 @@ export const dataSourceOptions: DataSourceOptions = {
     type: 'postgres',
     database: 'tribofit',
     username: 'postgres',
-    password: '0667',
+    password: 'admin',
     port: 5432,
     entities: ['dist/**/*.entity.js'],
     migrations: ['dist/db/migrations/*.js'],

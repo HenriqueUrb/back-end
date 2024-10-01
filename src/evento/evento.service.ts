@@ -140,27 +140,28 @@ export class EventoService {
     return updatedEvento;
   }
 
-    async updateEventoUsuarios(dto: EventoDto) {
-      await this.validaEvento(dto);
+  async updateEventoUsuarios(dto: EventoDto) {
+    await this.validaEvento(dto);
 
-      const existingEvento = await this.findById(dto.id);
+    const existingEvento = await this.findById(dto.id);
       const admin = await this.usuarioRepository.findOne({ where: { id: dto.admin } });
 
 
-      if (dto.usuarios && dto.usuarios.length > 0) {
-        await this.eventoUsuarioRepository.delete({ evento: existingEvento });
-        const eventoUsuarios = dto.usuarios.map(dtoUsuario => {
-          const eventoUsuario = new EventoUsuarioEntity();
-          eventoUsuario.evento = { id: dto.id } as EventoEntity;
-          eventoUsuario.usuario = dtoUsuario.usuario;
-          eventoUsuario.statusParticipante = dtoUsuario.statusParticipante;
+    if (dto.usuarios && dto.usuarios.length > 0) {
+      await this.eventoUsuarioRepository.delete({ evento: existingEvento });
+
+      const eventoUsuarios = dto.usuarios.map(dtoUsuario => {
+        const eventoUsuario = new EventoUsuarioEntity();
+        eventoUsuario.evento = { id: dto.id } as EventoEntity;
+        eventoUsuario.usuario = dtoUsuario.usuario;
+        eventoUsuario.statusParticipante = dtoUsuario.statusParticipante;
           
     
-          return eventoUsuario;
+        return eventoUsuario;
       });
 
-        await this.eventoUsuarioRepository.save(eventoUsuarios);
-      }
+      await this.eventoUsuarioRepository.save(eventoUsuarios);
+    }
 
       
 
@@ -168,8 +169,8 @@ export class EventoService {
 
       
 
-      return existingEvento;
-    }
+    return existingEvento;
+  }
 
   private async validaEvento(evento: EventoDto) {
     this.validaPrenchimentoCampos(evento);
@@ -257,5 +258,5 @@ export class EventoService {
   
   
   
-
+  
 }
