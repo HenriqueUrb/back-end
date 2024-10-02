@@ -146,32 +146,33 @@ export class EventoService {
     return updatedEvento;
   }
 
-    async updateEventoUsuarios(dto: EventoDto) {
-      await this.validaEvento(dto);
+  async updateEventoUsuarios(dto: EventoDto) {
+    await this.validaEvento(dto);
 
-      const existingEvento = await this.findById(dto.id);
+    const existingEvento = await this.findById(dto.id);
       const admin = await this.usuarioRepository.findOne({ where: { id: dto.admin } });
 
 
-      if (dto.usuarios && dto.usuarios.length > 0) {
-        await this.eventoUsuarioRepository.delete({ evento: existingEvento });
-        const eventoUsuarios = dto.usuarios.map(dtoUsuario => {
-          const eventoUsuario = new EventoUsuarioEntity();
-          eventoUsuario.evento = { id: dto.id } as EventoEntity;
-          eventoUsuario.usuario = dtoUsuario.usuario;
-          eventoUsuario.statusParticipante = dtoUsuario.statusParticipante;
+    if (dto.usuarios && dto.usuarios.length > 0) {
+      await this.eventoUsuarioRepository.delete({ evento: existingEvento });
+
+      const eventoUsuarios = dto.usuarios.map(dtoUsuario => {
+        const eventoUsuario = new EventoUsuarioEntity();
+        eventoUsuario.evento = { id: dto.id } as EventoEntity;
+        eventoUsuario.usuario = dtoUsuario.usuario;
+        eventoUsuario.statusParticipante = dtoUsuario.statusParticipante;
           
     
-          return eventoUsuario;
+        return eventoUsuario;
       });
 
-        await this.eventoUsuarioRepository.save(eventoUsuarios);
-      }
+      await this.eventoUsuarioRepository.save(eventoUsuarios);
+    }
 
       this.mailService.sendSolicitacaoParticipacao(admin.email, admin.nome, dto.titulo);
 
-      return existingEvento;
-    }
+    return existingEvento;
+  }
 
   private async validaEvento(evento: EventoDto) {
     this.validaPrenchimentoCampos(evento);
@@ -280,7 +281,6 @@ export class EventoService {
         }
       });
     }
-  
     return evento;
   }
   
@@ -288,16 +288,12 @@ export class EventoService {
     const eventoUsuario = await this.eventoUsuarioService.findById(idEventoUsuario)
     const usuario = await this.usuarioService.findById(eventoUsuario.usuario.id);
     const evento = await this.findById(eventoUsuario.evento.id);
-/*     
-    eventoUsuario.statusParticipante = status.toUpperCase();
-    await this.eventoUsuarioRepository.save(eventoUsuario);
- */
     if (eventoUsuario.statusParticipante == 'A') {
       this.mailService.sendAvisoParticipacaoAprovada(usuario.email, usuario.nome, evento.titulo);
     } else {
       this.mailService.sendAvisoParticipacaoReprovada(usuario.email, usuario.nome, evento.titulo);
     }
-  
+    
     return eventoUsuario;
   }
 }
