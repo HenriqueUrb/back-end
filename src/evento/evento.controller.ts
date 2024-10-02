@@ -78,8 +78,18 @@ export class EventoController {
     return this.eventoService.update({ id, ...dto });
   }
 
+  @Put(':id/status-aprovacao')
+  async updateStatusAprovacao(@Param('id') id: string, @Body('status') status: string) {
+    return this.eventoService.updateStatusAprovacao(id, status);
+  }
+
+  @Put(':id/status-aprovacao-participante')
+  async updateStatusAprovacaoParticipante(@Param('idEventoUsuario') idEventoUsuario: string, @Body('status') status: string) {
+    return this.eventoService.updateStatusAprovacaoParticipante(idEventoUsuario, status);
+  }
+
   @Put(':id/status')
   async updateStatus(@Param('id') id: string, @Body('status') status: string) {
-    return this.eventoService.updateStatus(id, status);
+    return this.eventoService.updateStatusEvento(id, status);
   }
 }

@@ -8,6 +8,8 @@ import { EventoUsuarioEntity } from 'src/evento_usuario/evento_usuario.entity';
 import * as fs from 'fs';
 import * as path from 'path';
 import { MailService } from 'src/email/mail.service';
+import { UsuarioService } from 'src/usuario/usuario.service';
+import { EventoUsuarioService } from 'src/evento_usuario/evento_usuario.service';
 
 @Injectable()
 export class EventoService {
@@ -18,7 +20,9 @@ export class EventoService {
     private usuarioRepository: Repository<UsuarioEntity>,
     @InjectRepository(EventoUsuarioEntity)
     private eventoUsuarioRepository: Repository<EventoUsuarioEntity>,
-    private mailService: MailService
+    private mailService: MailService,
+    private usuarioService: UsuarioService,
+    private eventoUsuarioService: EventoUsuarioService
   ) { }
 
   findAll() {
@@ -29,7 +33,9 @@ export class EventoService {
 
   findEventosAprov() {
     return this.eventoRepository.find({
-      where: { status_aprov: 'A' },
+      where: { 
+        status_aprov: 'A',
+        status: 'A' },
       relations: ['cidade', 'modalidade', 'eventosUsuarios', 'eventosUsuarios.usuario'],
     });
   }
@@ -163,11 +169,7 @@ export class EventoService {
       await this.eventoUsuarioRepository.save(eventoUsuarios);
     }
 
-      
-
-      this.mailService.sendSolicitacaoParticipacao(admin.email, admin.nome, "Solicitante", dto.titulo);
-
-      
+      this.mailService.sendSolicitacaoParticipacao(admin.email, admin.nome, dto.titulo);
 
     return existingEvento;
   }
@@ -234,7 +236,7 @@ export class EventoService {
     }
   }
 
-  async updateStatus(id: string, status: string) {
+  async updateStatusAprovacao(id: string, status: string) {
     const evento = await this.findById(id);
   
     const oldStatus = evento.status_aprov;
@@ -252,11 +254,46 @@ export class EventoService {
     else if (oldStatus !== 'R' && evento.status_aprov === 'R' && admin) {
       await this.mailService.sendAvisoEventoReprovado(admin.email, admin.nome, evento.titulo);
     }
+
+    else if (oldStatus !== 'A' && evento.status_aprov === 'C' && admin) {
+      await this.mailService.sendAvisoEventoCancelado(admin.email, admin.nome, evento.titulo);
+    }
   
     return evento;
   }
+
+  async updateStatusEvento(id: string, status: string) {
+    const evento = await this.findById(id);
+    console.log("teste1");
+    const oldStatus = evento.status;
+    evento.status = status.toUpperCase();
+    await this.eventoRepository.save(evento);
   
+    const admin = await this.usuarioRepository.findOne({ where: { id: evento.admin } });
+
   
+    // Envia e-mail apenas se o status mudou de "pendente" para "aprovado"
+    if (oldStatus == 'A' && evento.status === 'C' && admin) {
+      evento.eventosUsuarios.forEach(async (eventoUsuario) => {
+        const usuario = eventoUsuario.usuario;
+        if (usuario && eventoUsuario.statusParticipante === 'A') { // Apenas participantes ativos
+          await this.mailService.sendAvisoEventoCancelado(usuario.email, usuario.nome, evento.titulo);
+        }
+      });
+    }
+    return evento;
+  }
   
-  
+  async updateStatusAprovacaoParticipante(idEventoUsuario: string, status: string, ) {
+    const eventoUsuario = await this.eventoUsuarioService.findById(idEventoUsuario)
+    const usuario = await this.usuarioService.findById(eventoUsuario.usuario.id);
+    const evento = await this.findById(eventoUsuario.evento.id);
+    if (eventoUsuario.statusParticipante == 'A') {
+      this.mailService.sendAvisoParticipacaoAprovada(usuario.email, usuario.nome, evento.titulo);
+    } else {
+      this.mailService.sendAvisoParticipacaoReprovada(usuario.email, usuario.nome, evento.titulo);
+    }
+    
+    return eventoUsuario;
+  }
 }
