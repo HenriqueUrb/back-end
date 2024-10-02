@@ -8,10 +8,12 @@ import { ModalidadeEntity } from 'src/modalidade/modalidade.entity';
 import { EventoUsuarioEntity } from 'src/evento_usuario/evento_usuario.entity';
 import { UploadService } from 'src/core/upload.service';
 import { MailModule } from 'src/email/mail.module';
+import { EventoUsuarioService } from 'src/evento_usuario/evento_usuario.service';
+import { UsuarioModule } from 'src/usuario/usuario.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([EventoEntity, UsuarioEntity, ModalidadeEntity,EventoUsuarioEntity]), MailModule],
+  imports: [TypeOrmModule.forFeature([EventoEntity, UsuarioEntity, ModalidadeEntity,EventoUsuarioEntity]), MailModule, UsuarioModule],
   controllers: [EventoController],
-  providers: [EventoService, UploadService,],
+  providers: [EventoService, UploadService, EventoUsuarioService],
 })
 export class EventoModule {}

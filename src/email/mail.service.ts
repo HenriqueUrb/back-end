@@ -31,7 +31,7 @@ export class MailService {
       from: '"Contato TriboFit" <contatotribofit@gmail.com>', // Seu e-mail
       to: to,
       subject: subject,
-      html: html,
+      html,
     };
 
     // Envia o e-mail
@@ -48,7 +48,7 @@ export class MailService {
     await this.sendMail({
       to: email,
       subject: 'Código de Redefinição de Senha',
-      html: html,
+      html,
     });
   }
 
@@ -61,22 +61,21 @@ export class MailService {
     await this.sendMail({
       to: email,
       subject: 'Você alterou sua senha',
-      html: html,
+      html,
     });
   }
 
-  async sendSolicitacaoParticipacao(email: string, nomeAdmin: string, nomeSolicitante: string, nomeEvento: string) {
+  async sendSolicitacaoParticipacao(email: string, nomeAdmin: string, nomeEvento: string) {
     const templatePath = this.getTemplatePath('solicitacao-participacao.html');
     let html = fs.readFileSync(templatePath, 'utf8');
 
-    html = html.replace('{{nomeSolicitante}}', nomeSolicitante);
     html = html.replace('{{nomeAdmin}}', nomeAdmin);
     html = html.replace('{{nomeEvento}}', nomeEvento )
 
     await this.sendMail({
       to: email,
       subject: 'Um usuário solicitou participação em seu evento',
-      html: html,
+      html,
     });
   }
 
@@ -90,7 +89,7 @@ export class MailService {
     await this.sendMail({
       to: email,
       subject: 'Seu evento foi aprovado',
-      html: html,
+      html,
     });
   }
 
@@ -104,7 +103,49 @@ export class MailService {
     await this.sendMail({
       to: email,
       subject: 'Seu evento foi reprovado',
-      html: html,
+      html,
+    });
+  }
+
+  async sendAvisoEventoCancelado(email: string, nomeUsuario: string, nomeEvento: string) {
+    const templatePath = this.getTemplatePath('evento-cancelado.html');
+    let html = fs.readFileSync(templatePath, 'utf8');
+
+    html = html.replace('{{nomeUsuario}}', nomeUsuario);
+    html = html.replace('{{nomeEvento}}', nomeEvento )
+
+    await this.sendMail({
+      to: email,
+      subject: 'Seu evento foi cancelado',
+      html,
+    });
+  }
+
+  async sendAvisoParticipacaoAprovada(email: string, nomeUsuario: string, nomeEvento: string) {
+    const templatePath = this.getTemplatePath('participacao-aprovada.html');
+    let html = fs.readFileSync(templatePath, 'utf8');
+
+    html = html.replace('{{nomeUsuario}}', nomeUsuario);
+    html = html.replace('{{nomeEvento}}', nomeEvento )
+
+    await this.sendMail({
+      to: email,
+      subject: 'Seu participação no evento foi aprovada',
+      html,
+    });
+  }
+
+  async sendAvisoParticipacaoReprovada(email: string, nomeUsuario: string, nomeEvento: string) {
+    const templatePath = this.getTemplatePath('participacao-reprovada.html');
+    let html = fs.readFileSync(templatePath, 'utf8');
+
+    html = html.replace('{{nomeUsuario}}', nomeUsuario);
+    html = html.replace('{{nomeEvento}}', nomeEvento )
+
+    await this.sendMail({
+      to: email,
+      subject: 'Seu participação no evento foi reprovada',
+      html,
     });
   }
 
